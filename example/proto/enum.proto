@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package enum;
+
+option go_package = "github.com/995933447/easymicro/example/enum";
+
+import "easymicro_ext.proto";
+
+enum RPCPort {
+  option(easymicro_ext.is_rpc_port) = true;
+  RPCPortNil = 0;
+  RPCPortUser = 20011;
+}

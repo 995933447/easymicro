@@ -1,0 +1,12 @@
+package handler
+
+import (
+	{{- range .Imports }}
+    "{{.}}"
+    {{- end }}
+)
+
+func (s *{{.ServiceName}}) {{.MethodName}}(ctx context.Context, req *{{.Req}}) (*{{.Resp}}, error) {
+	var resp {{.Resp}}
+	return &resp, nil
+}

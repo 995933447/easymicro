@@ -1,0 +1,14 @@
+{
+  "connections": {
+    "default": {
+      "servers":["nats://127.0.0.1:8111"],
+      "user": "root",
+      "password": "123456"
+    },
+    "easymicro_rpc": {
+      "servers":["nats://127.0.0.1:8111"],
+      "user": "root",
+      "password": "123456"
+    }
+  }
+}

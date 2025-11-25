@@ -1,0 +1,14 @@
+package boot
+
+import (
+    {{ if not .DisabledLoadFastlog -}}
+	easymicrorouteredis "github.com/995933447/easymicro/routeredis"
+	"github.com/995933447/routeredis"
+	{{- end }}
+)
+
+func InitRouteredis() {
+    {{ if not .DisabledLoadFastlog -}}
+	routeredis.OnCmdDone = easymicrorouteredis.FastlogRedisCmd
+	{{- end }}
+}

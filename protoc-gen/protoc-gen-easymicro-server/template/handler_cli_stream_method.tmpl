@@ -1,0 +1,11 @@
+package handler
+
+import (
+	{{- range .Imports }}
+    "{{.}}"
+    {{- end }}
+)
+
+func (s *{{.ServiceName}}) {{.MethodName}}(stream grpc.ClientStreamingServer[{{.Req}}, {{.Resp}}]) error {
+	return nil
+}

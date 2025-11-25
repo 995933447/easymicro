@@ -1,0 +1,6 @@
+{
+	"sample_pprof_time_long_sec": 20,
+	"env": "dev",
+    "check_worker_pool_size": 1,
+    "enabled_nats": true
+}

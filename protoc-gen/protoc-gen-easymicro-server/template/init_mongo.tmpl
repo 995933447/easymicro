@@ -1,0 +1,34 @@
+package boot
+
+import (
+    {{ if not .DisabledMgormRedisCacheConn -}}
+	"time"
+	"github.com/995933447/routeredis"
+	"github.com/995933447/fastlog"
+	{{- end }}
+    {{ if not .DisabledFastlogMgormQuery -}}
+	easymciromgorm "github.com/995933447/easymicro/mgorm"
+	{{- end }}
+	{{ if not (And .DisabledFastlogMgormQuery .DisabledMgormRedisCacheConn) }}
+	"github.com/995933447/mgorm"
+	{{- end }}
+)
+
+func InitMgorm() error {
+    {{ if not .DisabledMgormRedisCacheConn -}}
+	pool, err := routeredis.NewDynamicConnPool("{{.MgormRedisCacheConn}}")
+	if err != nil {
+		return err
+	}
+
+	mgorm.DefaultCache = mgorm.NewRedisCache(pool, func(ttl int64, err error, cost time.Duration, cmd string, key string, args ...interface{}) {
+		fastlog.Infof("mgorm redis cache cmd:%s %s, args:%+v, ttl:%d, err:%v, cost:%s", cmd, key, args, ttl, err, cost)
+	})
+	{{- end }}
+
+    {{ if not .DisabledFastlogMgormQuery -}}
+	mgorm.OnQueryDone = easymciromgorm.FastlogMgormQuery
+    {{- end }}
+
+	return nil
+}

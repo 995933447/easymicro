@@ -1,0 +1,292 @@
+syntax = "proto3";
+
+package jobsched;
+option go_package = "github.com/995933447/easymicro/grpc/middleservice/jobsched";
+
+import "mgorm_ext.proto";
+import "easymicro_ext.proto";
+
+option (easymicro_ext.proto_gen_opts) = {
+  grpc_schema:"easymicrojob"
+  discovery_name:"easymicrojob"
+};
+
+enum SchedJobMode {
+  SchedJobModeNil = 0;
+  SchedJobModeSpecTime = 1; // 调度模式为指定时间戳
+  SchedJobModeTimeCron = 2; // 调度模式为crontab粗发
+  SchedJobModeTimeIntervalSec = 3; // 调度模式间隔n秒触发一次
+}
+
+enum ErrCode {
+  ErrCodeNil = 0;
+  ErrCodeParamInvalid = 1001;
+  ErrCodeJobNotFound = 1002;
+}
+
+enum SchedJobStatus {
+  SchedJobStatusNil = 0;
+  SchedJobStatusSched = 1;
+  SchedJobStatusRunning = 2;
+  SchedJobStatusFinish = 3;
+  SchedJobStatusStopped = 4;
+  SchedJobStatusRunningAsync = 5;
+  SchedJobStatusFail = 6;
+}
+
+service JobSched {
+    // 发布作业
+    rpc PubJob(PubJobReq) returns (PubJobResp);
+
+    // 设置作业
+    rpc SetJob(SetJobReq) returns (SetJobResp);
+
+    // 通过业务id设置作业
+    rpc SetJobsByBizId(SetJobsByBizIdReq) returns (SetJobsByBizIdResp);
+
+    // 停止作业
+    rpc StopJob(StopJobReq) returns (StopJobResp);
+
+    // 通过自定义唯一id停止作业
+    rpc StopJobByUniqKey(StopJobByUniqKeyReq) returns (StopJobByUniqKeyResp);
+
+    // 通过业务id停止作业
+    rpc StopJobsByBizId(StopJobsByBizIdReq) returns (StopJobsByBizIdResp);
+
+    // 查询作业
+    rpc GetJob(GetJobReq) returns (GetJobResp);
+
+    // 根据业务id查询作业
+    rpc GetJobsByBizId(GetJobsByBizIdReq) returns (GetJobsByBizIdResp);
+
+    // 根据唯一业务id查询作业
+    rpc GetJobByUniqKey(GetJobByUniqKeyReq) returns (GetJobByUniqKeyResp);
+
+    // 异步作业心跳检查
+    rpc HeartBeatAsyncJob(HeartBeatAsyncJobReq) returns (HeartBeatAsyncJobResp);
+
+    // 清理过期作业
+    rpc ClearExpiredJobs(ClearExpiredJobsReq) returns (ClearExpiredJobsResp) {
+      option(easymicro_ext.job_opts) = {};
+    }
+
+    // 删除作业
+    rpc DeleteJob(DeleteJobReq) returns (DeleteJobResp);
+}
+
+message DeleteJobReq {
+  string job_id = 1;
+}
+
+message DeleteJobResp {
+
+}
+
+message ClearExpiredJobsReq {
+
+}
+
+message ClearExpiredJobsResp {
+
+}
+
+message PubJobReq {
+  string name = 1; // 作业名称
+  string job_group = 2; // 作业分组
+  uint32 job_group_max_concur = 3; // 作业组最大并发数
+  int32 mode = 4;  // 模式，执行模式.1.指定时间戳（只运行一次）,2.cron表达式（持续间隔触发）(*/5 * * * * * *:时钟每五秒触发，0 */5 * * * * *：时钟每5分第0秒触发), 3.间隔执行（持续间隔出发）
+  string time_cron_expr = 5; // cron表达式（mode为2时候有效）
+  uint32 time_interval_sec  = 6;  // 间隔n秒执行一次 （mode为3时候有效）
+  int64 spec_time_at = 7;  // 指定时间执行（mode为1时候有效）
+  uint32 allow_re_run_count_caz_fail_per_sched = 8; // 每轮调度允许失败重试的最大次数
+  string rpc_srv = 9;  // rpc服务
+  string rpc_method = 10; // rpc方法
+  string arg = 11; // 任务参数,保存是要更新的内容
+  string biz_id = 12; // 自定义用于指定任务业务id，由开发人员自己定（不是真的仅仅指账变账单id）
+  string uniq_key = 13;  // 自定义唯一id
+  uint32 max_run_sec = 14; // 最长运行时间，超过20秒请使用异步方式，同步方式将强制最长仅能运行20秒，建议耗时任务直接使用异步模式
+}
+
+message PubJobResp {
+  string job_id = 1;
+}
+
+message SetJobReq {
+  string job_id = 1;
+  string job_group = 2;  // 作业分组
+  uint32 job_group_max_concur = 3;   // 作业组最大并发数
+  int32 mode = 4; // 模式，执行模式.1.指定时间戳（只运行一次）,2.cron表达式（持续间隔触发） 3.间隔执行（持续间隔出发）
+  string time_cron_expr = 5;   // cron表达式（mode为2时候有效）
+  uint32 time_interval_sec = 6;  // 间隔n秒执行一次 （mode为3时候有效）
+  int64 spec_time_at = 7;  // 指定时间执行（mode为1时候有效）
+  uint32 allow_re_run_count_caz_fail_per_sched = 8; // 每轮调度允许失败重试的最大次数
+  string rpc_srv = 9;  // rpc服务
+  string rpc_method = 10; // rpc方法
+  string arg = 11; // 参数
+  uint32 max_run_sec = 12;     // 最长运行时间
+  string biz_id = 13;
+}
+
+message SetJobResp {
+}
+
+message SetJobsByBizIdReq {
+  string biz_id = 1;
+  string job_group = 2;  // 作业分组
+  uint32 job_group_max_concur = 3;   // 作业组最大并发数
+  int32 mode = 4; // 模式，执行模式.1.指定时间戳（只运行一次）,2.cron表达式（持续间隔触发） 3.间隔执行（持续间隔出发）
+  string time_cron_expr = 5;   // cron表达式（mode为2时候有效）
+  uint32 time_interval_sec = 6;  // 间隔n秒执行一次 （mode为3时候有效）
+  int64 spec_time_at = 7;  // 指定时间执行（mode为1时候有效）
+  uint32 allow_re_run_count_caz_fail_per_sched = 8; // 每轮调度允许失败重试的最大次数
+  string rpc_srv = 9;  // rpc服务
+  string rpc_method = 10; // rpc方法
+  string arg = 11; // 参数
+  uint32 max_run_sec = 12;     // 最长运行时间
+}
+
+message SetJobsByBizIdResp {
+  bool has_more = 1;
+}
+
+message StopJobReq {
+  string job_id = 1;
+}
+
+message StopJobResp {
+
+}
+
+message StopJobByUniqKeyReq {
+  string uniq_key = 1;
+}
+
+message StopJobByUniqKeyResp {
+}
+
+message StopJobsByBizIdReq {
+  string biz_id = 1;
+}
+
+message StopJobsByBizIdResp {
+  bool has_more = 1;
+}
+
+message HeartBeatAsyncJobReq {
+  string job_id = 1; // 作业id
+  bool finish = 2; // 是否完成
+  string extra = 3;  // 额外响应
+  string err = 4;    // 作业错误
+}
+
+message HeartBeatAsyncJobResp {
+}
+
+message GetJobByUniqKeyReq {
+ string uniq_key = 1;
+}
+
+message GetJobByUniqKeyResp {
+  Job job = 1;
+}
+
+message GetJobsByBizIdReq {
+  string biz_id = 1; // 作业业务id
+  Page  page  = 2;
+  bool  need_calc_total = 3;
+}
+
+message GetJobsByBizIdResp {
+  repeated Job jobs = 1;
+  Page page = 2;
+  uint32 total = 3;
+}
+
+message GetJobReq {
+  string job_id = 1;
+}
+
+message GetJobResp {
+  Job job = 1;
+}
+
+message DelJobReq {
+  string job_id = 1;
+}
+
+message DelJobResp {
+
+}
+
+message DelJobByUniqKeyReq {
+  string uniq_key = 1;
+}
+
+message DelJobByUniqKeyResp {
+
+}
+
+message Page {
+  uint32 page = 1;
+  uint32 size = 2;
+}
+
+message Job {
+  option (mgorm_ext.mgorm_opts) = {
+    disabled_auto_expire_at:true
+    conn:"easymicrojob"
+    db:"easymicrojob"
+    tb:"job"
+    index_keys:["biz_id", "uniq_key"],
+    omitempty_default_bson_tag: false,
+    omitempty_default_json_tag: true,
+  };
+  string job_id = 1; // 作业id
+  string name = 2;
+  int32 status = 3; // 状态，0.等待调度，1.就绪状态，2.运行中，3.已完成. 4.已停止, 5.运步运行中
+  int64 last_sched_at = 4;   // 上次调度时间
+  int64 last_run_at = 5;    // 上次运行时间
+  int64 last_finish_run_at = 6; // 上次完成运行时间
+  int64 last_succ_at = 7;  // 任务完成时间
+  int64 last_fail_at = 8;  // 上次失败时间
+  uint32 sched_count = 9; // 调度次数
+  uint32 re_sched_count_caz_timeout = 10;  // 任务执行超时重试调度次数
+  uint32 re_run_count_caz_fail = 11;    // 任务失败超时重试运行次数
+  uint32 run_count = 12;  // 运行次数
+  uint32 allow_re_run_count_caz_fail_per_sched = 13; // 每轮调度允许失败重试的最大次数
+  uint32 re_run_count_caz_fail_cur_sched = 14;       // 本轮调度已经失败重试的次数,异步模式下无效
+  uint32 succ_count = 15;  // 成功次数
+  uint32 fail_count = 16;   // 失败次数
+  uint32 max_run_sec = 17;   // 任务最大允许毫秒数
+  string group_name = 18; // 分组名称，同组任务会受组的资源限制
+  uint32 group_max_concur = 19;  // 每组最大并发
+  int64  next_sched_at = 20;  // 下次调度时间
+  string time_cron_expr = 21;  // crond表达式，mode为2时有效
+  uint32 time_interval_sec = 22;    // 时间间隔，mode为3时有效
+  int32 mode = 23;                                                               // 执行模式.1.指定时间戳,2.cron表达式,3.间隔执行
+  int32 is_run_in_async = 24;   // 是否异步模式运行，0.否，1.是
+  int64 last_heart_beat_in_async_at = 25;  // 异步运行心跳
+  string rpc_srv = 26;  // rpc服务
+  string rpc_method = 27; // rpc方法
+  string arg = 28; // 任务参数,保存是要更新的内容
+  string biz_id = 29; // 自定义用于指定任务业务id，由开发人员自己定（不是真的仅仅指账变账单id）
+  string uniq_key = 30;  // 任务自定义唯一id，该id唯一
+  string last_err = 31;  // 上次错误原因
+  string last_res_extra = 32;
+  string creator_trace = 33; // 创建者trace id
+  string last_callback_trace = 34; // 上次回调trace
+}
+
+message JobGroup {
+  option (mgorm_ext.mgorm_opts) = {
+    disabled_auto_expire_at:true
+    conn:"easymicrojob"
+    db:"easymicrojob"
+    tb:"job_group"
+    uniq_index_keys:["name"],
+    omitempty_default_bson_tag: false,
+    omitempty_default_json_tag: true,
+  };
+  string name = 1;
+  uint32 max_concur = 2;
+}
