@@ -13,6 +13,7 @@ import (
 	"github.com/995933447/runtimeutil"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/balancer/base"
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/resolver"
 )
@@ -42,50 +43,36 @@ var (
 )
 
 func init() {
-	balancer.Register(base.NewBalancerBuilder(
-		BalancerNameFnvConsistentHash,
-		&FnvConsistentHashingPickerBuilder{
-			FnvConsistentHashingPickerBuilderHasher: FnvConsistentHashingPickerBuilderHasher{FnvHashVersionDefault},
-			BalancerName:                            BalancerNameFnvConsistentHash,
-		},
-		base.Config{},
-	))
+	balancer.Register(&WaitSubConnReadyBalancerBuilder{})
 
-	balancer.Register(base.NewBalancerBuilder(
-		BalancerNameFnvConsistentHash1aSum32,
-		&FnvConsistentHashingPickerBuilder{
-			FnvConsistentHashingPickerBuilderHasher: FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1aSum32},
-			BalancerName:                            BalancerNameFnvConsistentHash1aSum32,
-		},
-		base.Config{},
-	))
+	// ======== 一致性hash轮训器不采用一般的 base.NewBalancerBuilder + balancer.PickerBuilder 的方式注册，因为
+	// balancer.PickerBuilder在每个subConn连接ready时候会异步回调一次，不会等待所有subConn连接状态称为ready，也无法读取到
+	// 所有连接的地址，做一致性hash取模会出现临时性不准确
+	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+		name:          BalancerNameFnvConsistentHash,
+		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash, FnvConsistentHashingPickerBuilderHasher{FnvHashVersionDefault}),
+	})
 
-	balancer.Register(base.NewBalancerBuilder(
-		BalancerNameFnvConsistentHash1aSum64,
-		&FnvConsistentHashingPickerBuilder{
-			FnvConsistentHashingPickerBuilderHasher: FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1aSum64},
-			BalancerName:                            BalancerNameFnvConsistentHash1aSum64,
-		},
-		base.Config{},
-	))
+	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+		name:          BalancerNameFnvConsistentHash1aSum32,
+		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1aSum32, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1aSum32}),
+	})
 
-	balancer.Register(base.NewBalancerBuilder(
-		BalancerNameFnvConsistentHash1Sum32,
-		&FnvConsistentHashingPickerBuilder{
-			FnvConsistentHashingPickerBuilderHasher: FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1Sum32},
-			BalancerName:                            BalancerNameFnvConsistentHash1Sum32,
-		},
-		base.Config{},
-	))
+	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+		name:          BalancerNameFnvConsistentHash1aSum64,
+		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1aSum64, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1aSum64}),
+	})
 
-	balancer.Register(base.NewBalancerBuilder(
-		BalancerNameFnvConsistentHash1Sum64,
-		&FnvConsistentHashingPickerBuilder{
-			FnvConsistentHashingPickerBuilderHasher: FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1Sum64},
-			BalancerName:                            BalancerNameFnvConsistentHash1Sum64,
-		},
-		base.Config{},
-	))
+	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+		name:          BalancerNameFnvConsistentHash1Sum32,
+		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1Sum32, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1Sum32}),
+	})
+
+	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+		name:          BalancerNameFnvConsistentHash1Sum64,
+		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1Sum64, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1Sum64}),
+	})
+	// ========
 
 	balancer.Register(base.NewBalancerBuilder(
 		BalancerNameWeightedNode,
@@ -110,6 +97,133 @@ func init() {
 		},
 		base.Config{},
 	))
+}
+
+var _ balancer.Builder = (*WaitSubConnReadyBalancerBuilder)(nil)
+
+type WaitSubConnReadyBalancerBuilder struct {
+	newPickerFunc func(conns, readyConns map[string]balancer.SubConn) balancer.Picker
+	name          string
+}
+
+func (b *WaitSubConnReadyBalancerBuilder) Name() string {
+	return b.name
+}
+
+func (b *WaitSubConnReadyBalancerBuilder) Build(cc balancer.ClientConn, opts balancer.BuildOptions) balancer.Balancer {
+	bal := &WaitSubConnReadyBalancer{
+		cc:            cc,
+		conns:         make(map[string]balancer.SubConn),
+		readyConns:    make(map[string]balancer.SubConn),
+		mapConn2Addr:  make(map[balancer.SubConn]string),
+		newPickerFunc: b.newPickerFunc,
+	}
+	return bal
+}
+
+var _ balancer.Balancer = (*WaitSubConnReadyBalancer)(nil)
+
+type WaitSubConnReadyBalancer struct {
+	cc            balancer.ClientConn
+	mu            sync.Mutex
+	conns         map[string]balancer.SubConn
+	mapConn2Addr  map[balancer.SubConn]string
+	readyConns    map[string]balancer.SubConn
+	newPickerFunc func(conns, readyConns map[string]balancer.SubConn) balancer.Picker
+}
+
+func (b *WaitSubConnReadyBalancer) UpdateClientConnState(state balancer.ClientConnState) error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	// 新建 SubConn
+	addrSet := make(map[string]struct{})
+	for _, addr := range state.ResolverState.Addresses {
+		addrSet[addr.Addr] = struct{}{}
+		if _, ok := b.conns[addr.Addr]; !ok {
+			sc, err := b.cc.NewSubConn([]resolver.Address{addr}, balancer.NewSubConnOptions{})
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			b.conns[addr.Addr] = sc
+			b.mapConn2Addr[sc] = addr.Addr
+			sc.Connect()
+		}
+	}
+
+	var (
+		removeAddrs []string
+	)
+	for addr := range b.conns {
+		if _, ok := addrSet[addr]; ok {
+			continue
+		}
+		removeAddrs = append(removeAddrs, addr)
+	}
+
+	for _, addr := range removeAddrs {
+		conn := b.conns[addr]
+		b.cc.RemoveSubConn(conn)
+		delete(b.conns, addr)
+		delete(b.readyConns, addr)
+		delete(b.mapConn2Addr, conn)
+	}
+
+	return nil
+}
+
+func (b *WaitSubConnReadyBalancer) ResolverError(err error) {
+}
+
+func (b *WaitSubConnReadyBalancer) UpdateSubConnState(conn balancer.SubConn, state balancer.SubConnState) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	addr, ok := b.mapConn2Addr[conn]
+	if ok {
+		switch state.ConnectivityState {
+		case connectivity.Ready:
+			b.readyConns[addr] = conn
+		case connectivity.Shutdown, connectivity.TransientFailure:
+			delete(b.readyConns, addr)
+		default:
+		}
+	}
+
+	// 更新 Picker
+	if len(b.readyConns) == 0 {
+		b.cc.UpdateState(balancer.State{
+			ConnectivityState: connectivity.Connecting, // connecting状态时候,grpc会阻塞直到ConnectivityState变成ready或者超时
+			Picker:            b.newPickerFunc(b.conns, b.readyConns),
+		})
+		return
+	}
+
+	// 至少有一个地址链接可用
+	b.cc.UpdateState(balancer.State{
+		ConnectivityState: connectivity.Ready,
+		Picker:            b.newPickerFunc(b.conns, b.readyConns),
+	})
+}
+
+func (b *WaitSubConnReadyBalancer) Close() {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	for _, sc := range b.conns {
+		b.cc.RemoveSubConn(sc)
+	}
+	b.conns = nil
+	b.readyConns = nil
+	b.mapConn2Addr = nil
+}
+
+func (b *WaitSubConnReadyBalancer) ExitIdle() {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	for _, sc := range b.conns {
+		sc.Connect()
+	}
 }
 
 var (
@@ -211,11 +325,58 @@ const (
 
 const FnvHashVersionDefault = FnvHashVersion1aSum32
 
+func NewFnvConsistentHashingPickerWithConnsFunc(balancerName string, hasher FnvConsistentHashingPickerBuilderHasher) func(conns, readyConns map[string]balancer.SubConn) balancer.Picker {
+	return func(conns, readyConns map[string]balancer.SubConn) balancer.Picker {
+		var (
+			nodes         = make([]*PickerHashNode, 0, len(readyConns))
+			mapAddrToConn = make(map[string]balancer.SubConn)
+		)
+		for addr, conn := range conns {
+			hash, err := hasher.hash(addr)
+			if err != nil {
+				log.Error(runtimeutil.NewStackErr(err))
+				continue
+			}
+
+			_, ready := readyConns[addr]
+
+			nodes = append(nodes, &PickerHashNode{
+				conn:  conn,
+				hash:  hash,
+				ready: ready,
+			})
+
+			if !ready {
+				continue
+			}
+
+			mapAddrToConn[addr] = conn
+		}
+
+		sort.Slice(nodes, func(i, j int) bool {
+			return nodes[i].hash < nodes[j].hash
+		})
+
+		var maxHashNode *PickerHashNode
+		if len(nodes) > 0 {
+			maxHashNode = nodes[len(nodes)-1]
+		}
+
+		return &FnvConsistentHashingPicker{
+			SpecAddrPicker:                          NewSpecAddrPicker(mapAddrToConn, IsBalancerEnabledSpecAddrPicker(balancerName)),
+			FnvConsistentHashingPickerBuilderHasher: hasher,
+			maxHashNode:                             maxHashNode,
+			nodes:                                   nodes,
+		}
+	}
+}
+
 var _ balancer.Picker = (*FnvConsistentHashingPicker)(nil)
 
 type PickerHashNode struct {
-	conn balancer.SubConn
-	hash uint64
+	conn  balancer.SubConn
+	hash  uint64
+	ready bool
 }
 
 type FnvConsistentHashingPicker struct {
@@ -257,6 +418,11 @@ func (p *FnvConsistentHashingPicker) Pick(info balancer.PickInfo) (balancer.Pick
 	}
 
 	if hash > p.maxHashNode.hash {
+		node := p.nodes[0]
+		if !node.ready {
+			return balancer.PickResult{}, balancer.ErrNoSubConnAvailable // 返回无地址可用,grpc会阻塞直到有地址可用或者超时
+		}
+
 		return balancer.PickResult{
 			SubConn: p.nodes[0].conn,
 		}, nil
@@ -264,10 +430,19 @@ func (p *FnvConsistentHashingPicker) Pick(info balancer.PickInfo) (balancer.Pick
 
 	for _, node := range p.nodes {
 		if hash <= node.hash {
+			if !node.ready {
+				return balancer.PickResult{}, balancer.ErrNoSubConnAvailable // 返回无地址可用,grpc会阻塞直到有地址可用或者超时
+			}
+
 			return balancer.PickResult{
 				SubConn: node.conn,
 			}, nil
 		}
+	}
+
+	node := p.nodes[0]
+	if !node.ready {
+		return balancer.PickResult{}, balancer.ErrNoSubConnAvailable // 返回无地址可用,grpc会阻塞直到有地址可用或者超时
 	}
 
 	return balancer.PickResult{
@@ -294,8 +469,9 @@ func (p *FnvConsistentHashingPickerBuilder) Build(info base.PickerBuildInfo) bal
 			continue
 		}
 		nodes = append(nodes, &PickerHashNode{
-			conn: conn,
-			hash: hash,
+			conn:  conn,
+			hash:  hash,
+			ready: true,
 		})
 		mapAddrToConn[addr.Address.Addr] = conn
 	}
