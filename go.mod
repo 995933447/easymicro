@@ -37,6 +37,7 @@ require (
 	github.com/995933447/bucketsched v0.0.0-20250611075749-67a5cf75b171 // indirect
 	github.com/995933447/confloader v0.0.0-20230314141707-e7b191386ae2 // indirect
 	github.com/995933447/elemutil v0.0.0-20250630191443-bdcec6639093 // indirect
+	github.com/995933447/goencrypt v0.0.0-20251127174327-7555620d9186 // indirect
 	github.com/995933447/gofiler v0.0.0-20250611152943-58698ea59433 // indirect
 	github.com/995933447/log-go v0.0.0-20250818064754-1cf193b4cc0c // indirect
 	github.com/995933447/microgosuit v0.0.0-20251018133645-778ba32fcb43 // indirect
