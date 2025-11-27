@@ -43,32 +43,32 @@ var (
 )
 
 func init() {
-	balancer.Register(&WaitSubConnReadyBalancerBuilder{})
+	balancer.Register(&ReportFullConnStateBalancerBuilder{})
 
 	// ======== 一致性hash轮训器不采用一般的 base.NewBalancerBuilder + balancer.PickerBuilder 的方式注册，因为
 	// balancer.PickerBuilder在每个subConn连接ready时候会异步回调一次，不会等待所有subConn连接状态称为ready，也无法读取到
 	// 所有连接的地址，做一致性hash取模会出现临时性不准确
-	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+	balancer.Register(&ReportFullConnStateBalancerBuilder{
 		name:          BalancerNameFnvConsistentHash,
 		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash, FnvConsistentHashingPickerBuilderHasher{FnvHashVersionDefault}),
 	})
 
-	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+	balancer.Register(&ReportFullConnStateBalancerBuilder{
 		name:          BalancerNameFnvConsistentHash1aSum32,
 		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1aSum32, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1aSum32}),
 	})
 
-	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+	balancer.Register(&ReportFullConnStateBalancerBuilder{
 		name:          BalancerNameFnvConsistentHash1aSum64,
 		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1aSum64, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1aSum64}),
 	})
 
-	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+	balancer.Register(&ReportFullConnStateBalancerBuilder{
 		name:          BalancerNameFnvConsistentHash1Sum32,
 		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1Sum32, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1Sum32}),
 	})
 
-	balancer.Register(&WaitSubConnReadyBalancerBuilder{
+	balancer.Register(&ReportFullConnStateBalancerBuilder{
 		name:          BalancerNameFnvConsistentHash1Sum64,
 		newPickerFunc: NewFnvConsistentHashingPickerWithConnsFunc(BalancerNameFnvConsistentHash1Sum64, FnvConsistentHashingPickerBuilderHasher{FnvHashVersion1Sum64}),
 	})
@@ -99,19 +99,19 @@ func init() {
 	))
 }
 
-var _ balancer.Builder = (*WaitSubConnReadyBalancerBuilder)(nil)
+var _ balancer.Builder = (*ReportFullConnStateBalancerBuilder)(nil)
 
-type WaitSubConnReadyBalancerBuilder struct {
+type ReportFullConnStateBalancerBuilder struct {
 	newPickerFunc func(conns, readyConns map[string]balancer.SubConn) balancer.Picker
 	name          string
 }
 
-func (b *WaitSubConnReadyBalancerBuilder) Name() string {
+func (b *ReportFullConnStateBalancerBuilder) Name() string {
 	return b.name
 }
 
-func (b *WaitSubConnReadyBalancerBuilder) Build(cc balancer.ClientConn, opts balancer.BuildOptions) balancer.Balancer {
-	bal := &WaitSubConnReadyBalancer{
+func (b *ReportFullConnStateBalancerBuilder) Build(cc balancer.ClientConn, opts balancer.BuildOptions) balancer.Balancer {
+	bal := &ReportFullConnStateBalancer{
 		cc:            cc,
 		conns:         make(map[string]balancer.SubConn),
 		readyConns:    make(map[string]balancer.SubConn),
@@ -121,9 +121,9 @@ func (b *WaitSubConnReadyBalancerBuilder) Build(cc balancer.ClientConn, opts bal
 	return bal
 }
 
-var _ balancer.Balancer = (*WaitSubConnReadyBalancer)(nil)
+var _ balancer.Balancer = (*ReportFullConnStateBalancer)(nil)
 
-type WaitSubConnReadyBalancer struct {
+type ReportFullConnStateBalancer struct {
 	cc            balancer.ClientConn
 	mu            sync.Mutex
 	conns         map[string]balancer.SubConn
@@ -132,7 +132,7 @@ type WaitSubConnReadyBalancer struct {
 	newPickerFunc func(conns, readyConns map[string]balancer.SubConn) balancer.Picker
 }
 
-func (b *WaitSubConnReadyBalancer) UpdateClientConnState(state balancer.ClientConnState) error {
+func (b *ReportFullConnStateBalancer) UpdateClientConnState(state balancer.ClientConnState) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -173,10 +173,10 @@ func (b *WaitSubConnReadyBalancer) UpdateClientConnState(state balancer.ClientCo
 	return nil
 }
 
-func (b *WaitSubConnReadyBalancer) ResolverError(err error) {
+func (b *ReportFullConnStateBalancer) ResolverError(err error) {
 }
 
-func (b *WaitSubConnReadyBalancer) UpdateSubConnState(conn balancer.SubConn, state balancer.SubConnState) {
+func (b *ReportFullConnStateBalancer) UpdateSubConnState(conn balancer.SubConn, state balancer.SubConnState) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -207,7 +207,7 @@ func (b *WaitSubConnReadyBalancer) UpdateSubConnState(conn balancer.SubConn, sta
 	})
 }
 
-func (b *WaitSubConnReadyBalancer) Close() {
+func (b *ReportFullConnStateBalancer) Close() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for _, sc := range b.conns {
@@ -218,7 +218,7 @@ func (b *WaitSubConnReadyBalancer) Close() {
 	b.mapConn2Addr = nil
 }
 
-func (b *WaitSubConnReadyBalancer) ExitIdle() {
+func (b *ReportFullConnStateBalancer) ExitIdle() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	for _, sc := range b.conns {
