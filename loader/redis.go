@@ -178,8 +178,8 @@ func LoadAndWatchRedisFromLocal() error {
 func TryDecryptRedisConfig(cfg *RedisConfig) {
 	for _, conn := range cfg.Conns {
 		if conn.Password != "" {
-			decrypted, ok, _ := util.Decrypt(conn.Password)
-			if ok {
+			decrypted, err := util.Decrypt(conn.Password)
+			if err == nil {
 				conn.Password = decrypted
 			}
 		}

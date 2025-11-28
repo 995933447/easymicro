@@ -3,7 +3,7 @@ package util
 import (
 	"os"
 
-	"github.com/995933447/goencrypt"
+	"github.com/deatil/go-cryptobin/cryptobin/crypto"
 )
 
 const (
@@ -25,21 +25,24 @@ func GetEncryptAesKeyAndAesIv() (string, string) {
 
 func Encrypt(s string) (string, error) {
 	aesKey, aesIv := GetEncryptAesKeyAndAesIv()
-	buf, err := goencrypt.EncryptAESCBCBase64([]byte(s), aesKey, aesIv, true)
-	if err != nil {
+
+	c := crypto.FromString(s).SetKey(aesKey).SetIv(aesIv).Aes().CBC().PKCS7Padding().Encrypt()
+
+	if err := c.Error(); err != nil {
 		return "", err
 	}
-	return string(buf), nil
+
+	return c.ToBase64String(), nil
 }
 
-func Decrypt(s string) (string, bool, error) {
+func Decrypt(s string) (string, error) {
 	aesKey, aesIv := GetEncryptAesKeyAndAesIv()
-	buf, ok, err := goencrypt.DecryptAESCBCBase64([]byte(s), aesKey, aesIv, true)
-	if err != nil {
-		return "", false, err
+
+	d := crypto.FromBase64String(s).SetKey(aesKey).SetIv(aesIv).Aes().CBC().PKCS7Padding().Decrypt()
+
+	if err := d.Error(); err != nil {
+		return "", err
 	}
-	if !ok {
-		return "", false, nil
-	}
-	return string(buf), true, nil
+
+	return d.ToString(), nil
 }

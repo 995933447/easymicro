@@ -92,7 +92,7 @@ func LoadNatsConfigFromLocal() error {
 	}
 
 	TryDecryptNatsConfig(defaultNatsConfig)
-	
+
 	return nil
 }
 
@@ -121,15 +121,15 @@ func LoadNatsFromLocal() error {
 func TryDecryptNatsConfig(cfg *NatsConfig) {
 	for _, conn := range cfg.Conns {
 		if conn.User != "" {
-			decrypted, ok, _ := util.Decrypt(conn.User)
-			if ok {
+			decrypted, err := util.Decrypt(conn.User)
+			if err == nil {
 				conn.User = decrypted
 			}
 		}
 
 		if conn.Password != "" {
-			decrypted, ok, _ := util.Decrypt(conn.Password)
-			if ok {
+			decrypted, err := util.Decrypt(conn.Password)
+			if err == nil {
 				conn.Password = decrypted
 			}
 		}

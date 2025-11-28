@@ -10,8 +10,6 @@ github.com/995933447/elemutil v0.0.0-20250630191443-bdcec6639093 h1:Rx5vFzioX9cs
 github.com/995933447/elemutil v0.0.0-20250630191443-bdcec6639093/go.mod h1:EF87ykGl7PIcSCF1lmqMHwohMtc8p0uzgP8F2Swg9XA=
 github.com/995933447/fastlog v0.0.0-20251104182943-e21775211e86 h1:aeL+YJCjm57VlrShBWI6kWHVIfgje2AB7PVF+HBHWDE=
 github.com/995933447/fastlog v0.0.0-20251104182943-e21775211e86/go.mod h1:xdBgYVGeI22mT3gxpLBdhedxqFnxjELb8JnhtNLe+eE=
-github.com/995933447/goencrypt v0.0.0-20251127174327-7555620d9186 h1:OaVjeaD/XtMWyzSW3RTR0GuwdCeSijmiFJJ47hoWpZo=
-github.com/995933447/goencrypt v0.0.0-20251127174327-7555620d9186/go.mod h1:XEtJo8AeKtzZa/I2YGkzpqReEmXdddmJAEJC7UvzzFc=
 github.com/995933447/gofiler v0.0.0-20250611152943-58698ea59433 h1:BLIO5LOHjdKebzwpuD55h+V1zJpzTzuE8Y0Sc/xq7j4=
 github.com/995933447/gofiler v0.0.0-20250611152943-58698ea59433/go.mod h1:WZpPfhr+i7up37DPP0S8yjPLB9XP8H5R2YgAUZN4Yek=
 github.com/995933447/gonetutil v0.0.0-20250930112637-8f898353708c h1:MakgDuw3NoCf3OfleuCchPfBNgShllLjSVgWCMJb4h4=
@@ -63,6 +61,8 @@ github.com/coreos/pkg v0.0.0-20240122114842-bbd7aa9bf6fb/go.mod h1:E3G3o1h8I7cfc
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/deatil/go-cryptobin v1.1.1010 h1:lrlkrpo2o2/ZBTHS5AF0bB2HqJutz/vOTRT120Li0Ps=
+github.com/deatil/go-cryptobin v1.1.1010/go.mod h1:x+/+SzyfbxliY2y0Fwe+OoLU0DEt9kWs6OMiwghcfJ0=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S9k=

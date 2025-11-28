@@ -16,6 +16,7 @@ require (
 	github.com/995933447/rpcbreaker v0.0.0-20251008122803-e2966ab3e50e
 	github.com/995933447/runtimeutil v0.0.0-20251106145257-76800ec1a3bb
 	github.com/995933447/stringhelper-go v0.0.0-20251106145056-e7fcf480d316
+	github.com/deatil/go-cryptobin v1.1.1010
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gomodule/redigo v1.9.3
 	github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75
@@ -37,7 +38,6 @@ require (
 	github.com/995933447/bucketsched v0.0.0-20250611075749-67a5cf75b171 // indirect
 	github.com/995933447/confloader v0.0.0-20230314141707-e7b191386ae2 // indirect
 	github.com/995933447/elemutil v0.0.0-20250630191443-bdcec6639093 // indirect
-	github.com/995933447/goencrypt v0.0.0-20251127174327-7555620d9186 // indirect
 	github.com/995933447/gofiler v0.0.0-20250611152943-58698ea59433 // indirect
 	github.com/995933447/log-go v0.0.0-20250818064754-1cf193b4cc0c // indirect
 	github.com/995933447/microgosuit v0.0.0-20251018133645-778ba32fcb43 // indirect

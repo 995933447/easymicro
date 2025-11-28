@@ -8,11 +8,9 @@ func TestEncrypt(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(s)
-	s, ok, err := Decrypt(s)
+	s, err = Decrypt(s)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ok {
-		t.Log(s)
-	}
+	t.Log(s)
 }
