@@ -52,11 +52,7 @@ func main() {
 		}
 
 		discoveryName = c.GetDiscoveryName()
-
-		if err := grpc.PrepareDiscoverGRPC(context.TODO(), jobsched.EasymicroGRPCSchema, discoveryName); err != nil {
-			log.Fatal(runtimeutil.NewStackErr(err))
-		}
-
+		
 		if err := jobsched.PrepareGRPC(discoveryName); err != nil {
 			log.Fatal(runtimeutil.NewStackErr(err))
 		}
