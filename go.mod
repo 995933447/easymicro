@@ -10,7 +10,7 @@ require (
 	github.com/995933447/grpcgateway v0.0.0-20251113113519-61e0d87dd150
 	github.com/995933447/looptask v0.0.0-20250616095454-6693b329b959
 	github.com/995933447/mergetodotask v0.0.0-20251016144102-d2f6d317f6f8
-	github.com/995933447/mgorm v0.0.0-20251120072259-5a22478b1f49
+	github.com/995933447/mgorm v0.0.0-20251126061242-229f503d5b0b
 	github.com/995933447/natsevent v0.0.0-20251114145941-a4589f33009b
 	github.com/995933447/routeredis v0.0.0-20251106105705-c8553379e3f5
 	github.com/995933447/rpcbreaker v0.0.0-20251008122803-e2966ab3e50e
@@ -75,7 +75,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
-	github.com/xdg-go/scram v1.1.2 // indirect
+	github.com/xdg-go/scram v1.2.0 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.etcd.io/etcd/api/v3 v3.6.6 // indirect
