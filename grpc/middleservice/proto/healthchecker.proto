@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package healthchecker;
+option go_package = "github.com/995933447/easymicro/grpc/middleservice/healthchecker";
+
+import "easymicro_ext.proto";
+
+option (easymicro_ext.proto_gen_opts) = {
+  disabled_load_nats:true
+  disabled_load_redis:true
+  disabled_load_mongo:true,
+  disabled_elect:true,
+  disabled_load_fastlog:true
+};
+
+service HealthChecker {
+}

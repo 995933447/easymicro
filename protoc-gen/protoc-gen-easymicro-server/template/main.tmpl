@@ -1,0 +1,136 @@
+package main
+
+import (
+	"context"
+	"log"
+	"strings"
+
+	"{{.ServiceServerImportPath}}/boot"
+	"{{.ServiceServerImportPath}}/config"
+	"{{.ServiceServerImportPath}}/event"
+	"{{.ServiceClientImportPath}}"
+	{{ if .EnabledJobRPC }}
+	_ "{{.ServiceServerImportPath}}/jobpub/impl"
+	"github.com/995933447/easymicro/grpc/middleservice/jobexec"
+    "github.com/995933447/easymicro/grpc/middleservice/jobsched"
+    "github.com/995933447/easymicro/grpc/middleservice/job"
+	{{ end }}
+	"github.com/995933447/easymicro/grpc/interceptor"
+	ggrpc "google.golang.org/grpc"
+
+	"github.com/995933447/discovery"
+	"github.com/995933447/easymicro/grpc"
+	"github.com/995933447/runtimeutil"
+)
+
+func main() {
+    if err := boot.InitNode("{{ PathBase .ServiceClientImportPath }}"); err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+    }
+
+	if err := config.LoadConfig(); err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+
+    {{ if not .DisabledLoadRedis -}}
+	boot.InitRouteredis()
+    {{- end }}
+
+    {{ if not .DisabledElect -}}
+	if err := boot.InitElect(context.TODO()); err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+	{{- end }}
+
+    {{ if not .DisabledLoadMongo -}}
+	if err := boot.InitMgorm(); err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+	{{- end }}
+
+	if err := event.RegisterEventListeners(); err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+
+    {{ if not .DisabledLoadNats -}}
+	config.SafeReadServerConfig(func(c *config.ServerConfig) {
+    	if !c.IsProd() {
+    		if err := boot.RegisterNatsRPCRoutes(); err != nil {
+    			log.Fatal(runtimeutil.NewStackErr(err))
+    		}
+    	}
+        {{- if .EnabledJobRPC }}
+
+    	if err := jobsched.PrepareGRPC(echo.EasymicroDiscoveryName); err != nil {
+            log.Fatal(runtimeutil.NewStackErr(err))
+        }
+        {{- end }}
+    })
+	{{- end }}
+
+	if err := grpc.PrepareDiscoverGRPC(context.TODO(), {{ PathBase .ServiceClientImportPath }}.EasymicroGRPCSchema, {{ PathBase .ServiceClientImportPath }}.EasymicroDiscoveryName); err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+
+	boot.RegisterGRPCDialOpts()
+
+	signal, err := boot.InitSignal()
+	if err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+
+	stopCtx, stopCancel := context.WithCancel(context.Background())
+	gracefulStopCtx, gracefulStopCancel := context.WithCancel(stopCtx)
+
+	err = signal.AppendSignalCallbackByAlias(boot.SignalAliasStop, func() {
+		gracefulStopCancel()
+	})
+	if err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+
+	err = signal.AppendSignalCallbackByAlias(boot.SignalAliasInterrupt, func() {
+		stopCancel()
+	})
+	if err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+
+	err = grpc.ServeGRPC(context.TODO(), &grpc.ServeGRPCOptions{
+		DiscoveryName:   {{ PathBase .ServiceClientImportPath }}.EasymicroDiscoveryName,
+		ServiceNames:    boot.ServiceNames,
+		StopCtx:         stopCtx,
+		GracefulStopCtx: gracefulStopCtx,
+		OnRunServer: func(server *ggrpc.Server, node *discovery.Node) {
+		    {{ if .EnabledJobRPC -}}
+		    jobexec.RegisterJobExecServer(server, &job.JobExecutor{})
+		    {{ end }}
+			signal.Start()
+			boot.InitApp()
+
+			log.Printf("up node %s:%d !\n", node.Host, node.Port)
+			log.Printf(">>>>>>>>>>>>>>> run %s successfully ! <<<<<<<<<<<<<<<", strings.Join(boot.ServiceNames, ", "))
+		},
+		RegisterServiceServersFunc: boot.RegisterServiceServers,
+		EnabledHealth:              {{ .EnabledHealth }},
+		GRPCServerOpts: []ggrpc.ServerOption{
+			ggrpc.ChainUnaryInterceptor(
+				interceptor.RecoveryServeRPCUnaryInterceptor,
+				interceptor.TraceServeRPCUnaryInterceptor,
+				{{ if not .DisabledLoadFastlog -}}
+				interceptor.FastlogServeRPCUnaryInterceptor,
+				{{- end }}
+			),
+			ggrpc.ChainStreamInterceptor(
+				interceptor.RecoveryServeRPCStreamInterceptor,
+				interceptor.TraceServeRPCStreamInterceptor,
+				{{ if not .DisabledLoadFastlog -}}
+				interceptor.FastlogServeRPCStreamInterceptor,
+				{{- end }}
+			),
+		},
+	})
+	if err != nil {
+		log.Fatal(runtimeutil.NewStackErr(err))
+	}
+}

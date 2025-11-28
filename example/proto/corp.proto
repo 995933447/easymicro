@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package corp;
+option go_package = "github.com/995933447/easymicro/example/corp";
+import "mgorm_ext.proto";
+import "easymicro_ext.proto";
+
+service Corp {
+  rpc GetCorp(GetCorpReq) returns (GetCorpResp);
+}
+
+message GetCorpReq {
+
+}
+
+message GetCorpResp {
+
+}

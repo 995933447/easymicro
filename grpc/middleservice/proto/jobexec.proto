@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package jobexec;
+option go_package = "github.com/995933447/easymicro/grpc/middleservice/jobexec";
+
+import "mgorm_ext.proto";
+import "easymicro_ext.proto";
+
+enum ErrCode {
+  ErrCodeNil = 0;
+  ErrCodeCallbackFuncNotFound = 1;
+}
+
+service JobExec {
+  rpc ExecJob(ExecJobReq) returns (ExecJobResp);
+}
+
+message ExecJobReq {
+  string arg = 1;   // 作业参数
+  string job_id = 2; // 作业id
+  string job_name = 3; // 作业名字
+  string job_group = 4;  // 作业分组
+  string biz_id = 5;  // 作业业务id
+  uint32 attempted = 6; // 已运行次数
+  int32 mode = 7; // 模式，执行模式.1.指定时间戳（只运行一次）,2.cron表达式（持续间隔触发） 3.间隔执行（持续间隔出发）
+  uint32 max_run_sec = 8;  // 最长运行时间
+  int64  plan_sched_at = 9; // 计划触发时间，实际触发时间与计划可能因为并发控制原因导致有些许误差
+  string rpc_srv = 10;
+  string rpc_method = 11;
+}
+
+message ExecJobResp {
+  string extra = 1; // 结果额外信息，将保存
+  bool is_run_in_async = 2; // 是否异步运行，异步运行调度器将不等待结果，采用心跳检查结果
+}

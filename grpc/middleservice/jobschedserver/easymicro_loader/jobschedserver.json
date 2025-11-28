@@ -1,0 +1,7 @@
+{
+	"sample_pprof_time_long_sec": 20,
+	"env": "dev",
+    "mongo_conn": "default",
+    "redis_conn": "default",
+    "discovery_name": "default"
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package user;
+option go_package = "github.com/995933447/easymicro/example/user";
+import "mgorm_ext.proto";
+import "easymicro_ext.proto";
+import "enum.proto";
+
+option (easymicro_ext.proto_gen_opts) = {
+//  server_package: "github.com/995933447/easymicro/example/usersrv";
+//  disabled_load_mongo:true,
+//  disabled_load_redis:true,
+//  disabled_load_nats:true,
+//  disabled_elect: true,
+};
+
+service User {
+  rpc GetUserInfo(GetUserInfoReq) returns (GetUserInfoResp);
+  rpc ProxyEcho(GetUserInfoReq) returns (GetUserInfoResp);
+}
+
+message GetUserInfoReq {
+  uint64 id = 1;
+}
+
+message GetUserInfoResp {
+  string name = 1;
+}
+

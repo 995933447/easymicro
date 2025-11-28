@@ -1,0 +1,14 @@
+package handler
+
+import (
+	"{{.ServiceClientImportPath}}"
+)
+
+type {{.ServiceName}} struct {
+	{{.ServiceClientPackage}}.Unimplemented{{.ServiceName}}Server
+	ServiceName string
+}
+
+var {{.ServiceName}}Handler = &{{.ServiceName}}{
+	ServiceName: {{.ServiceClientPackage}}.EasymicroGRPCPbServiceName{{.ServiceName}},
+}

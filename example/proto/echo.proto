@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package echo;
+option go_package = "github.com/995933447/easymicro/example/echo";
+import "mgorm_ext.proto";
+import "easymicro_ext.proto";
+
+service Echo {
+  rpc BasicEcho(EchoReq) returns (EchoResp) {
+    option(easymicro_ext.job_opts) = {};
+  }
+  rpc ProxyEcho(EchoReq) returns (EchoResp) {
+    option(easymicro_ext.job_opts) = {};
+  }
+}
+
+message EchoReq {
+  string echo = 1;
+  string remark = 2;
+  string author_name = 3;
+}
+
+message EchoResp {
+  string echo = 1;
+}
+
+enum ErrCode {
+  Nil = 0;
+  ErrFail = 1001;
+}
+
+message Echoer {
+  option(mgorm_ext.mgorm_opts) = {
+    conn: "default"
+    db: "echo_%d" // 分库
+    tb: "echoer"
+    uniq_index_keys: ["echoer_name"]
+    cached: true
+    expire_ttl_days:3
+  };
+  string echoer_name = 1;
+}
+
+message StopJobByUniqKeyReq {
+  string uniq_key = 1;
+}
+
+message StopJobByUniqKeyResp {
+}
