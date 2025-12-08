@@ -41,6 +41,6 @@ func Output() *jsonschema.Schema {
 	r.AllowAdditionalProperties = {{ .AllowAdditionalProperties }}
 	r.RequiredFromJSONSchemaTags = {{ .RequiredFromJSONSchemaTags }}
 	r.FieldNameTag = "{{ .FieldNameTag }}"
-	return r.Reflect(&{{ PathBase .ServiceClientImportPath }}.{{ .MessageName }}{{ if .IsORM }}Orm{{ .end }}{})
+	return r.Reflect(&{{ PathBase .ServiceClientImportPath }}.{{ .MessageName }}{{ if .IsORM }}Orm{{ end }}{})
 }
 `
