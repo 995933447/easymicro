@@ -78,7 +78,7 @@ message GetUserInfoResp {
 }
 
 message Echoer {
-  option(ext.mgorm_opts) = {
+  option(mgorm_ext.mgorm_opts) = {
     conn: "default"
     db: "echo_%d" // 分库
     tb: "echoer"
