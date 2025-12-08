@@ -20,8 +20,8 @@ enum SchedJobMode {
 
 enum ErrCode {
   ErrCodeNil = 0;
-  ErrCodeParamInvalid = 1001;
-  ErrCodeJobNotFound = 1002;
+  ErrCodeParamInvalid = 5001;
+  ErrCodeJobNotFound = 5002;
 }
 
 enum SchedJobStatus {

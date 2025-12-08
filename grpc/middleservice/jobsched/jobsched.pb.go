@@ -79,21 +79,21 @@ type ErrCode int32
 
 const (
 	ErrCode_ErrCodeNil          ErrCode = 0
-	ErrCode_ErrCodeParamInvalid ErrCode = 1001
-	ErrCode_ErrCodeJobNotFound  ErrCode = 1002
+	ErrCode_ErrCodeParamInvalid ErrCode = 5001
+	ErrCode_ErrCodeJobNotFound  ErrCode = 5002
 )
 
 // Enum value maps for ErrCode.
 var (
 	ErrCode_name = map[int32]string{
 		0:    "ErrCodeNil",
-		1001: "ErrCodeParamInvalid",
-		1002: "ErrCodeJobNotFound",
+		5001: "ErrCodeParamInvalid",
+		5002: "ErrCodeJobNotFound",
 	}
 	ErrCode_value = map[string]int32{
 		"ErrCodeNil":          0,
-		"ErrCodeParamInvalid": 1001,
-		"ErrCodeJobNotFound":  1002,
+		"ErrCodeParamInvalid": 5001,
+		"ErrCodeJobNotFound":  5002,
 	}
 )
 
@@ -2271,8 +2271,8 @@ const file_jobsched_proto_rawDesc = "" +
 	"\aErrCode\x12\x0e\n" +
 	"\n" +
 	"ErrCodeNil\x10\x00\x12\x18\n" +
-	"\x13ErrCodeParamInvalid\x10\xe9\a\x12\x17\n" +
-	"\x12ErrCodeJobNotFound\x10\xea\a*\xc8\x01\n" +
+	"\x13ErrCodeParamInvalid\x10\x89'\x12\x17\n" +
+	"\x12ErrCodeJobNotFound\x10\x8a'*\xc8\x01\n" +
 	"\x0eSchedJobStatus\x12\x15\n" +
 	"\x11SchedJobStatusNil\x10\x00\x12\x17\n" +
 	"\x13SchedJobStatusSched\x10\x01\x12\x19\n" +

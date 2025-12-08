@@ -8,7 +8,7 @@ import "easymicro_ext.proto";
 
 enum ErrCode {
   ErrCodeNil = 0;
-  ErrCodeCallbackFuncNotFound = 1;
+  ErrCodeCallbackFuncNotFound = 4001;
 }
 
 service JobExec {

@@ -27,18 +27,18 @@ type ErrCode int32
 
 const (
 	ErrCode_ErrCodeNil                  ErrCode = 0
-	ErrCode_ErrCodeCallbackFuncNotFound ErrCode = 1
+	ErrCode_ErrCodeCallbackFuncNotFound ErrCode = 4001
 )
 
 // Enum value maps for ErrCode.
 var (
 	ErrCode_name = map[int32]string{
-		0: "ErrCodeNil",
-		1: "ErrCodeCallbackFuncNotFound",
+		0:    "ErrCodeNil",
+		4001: "ErrCodeCallbackFuncNotFound",
 	}
 	ErrCode_value = map[string]int32{
 		"ErrCodeNil":                  0,
-		"ErrCodeCallbackFuncNotFound": 1,
+		"ErrCodeCallbackFuncNotFound": 4001,
 	}
 )
 
@@ -267,11 +267,11 @@ const file_jobexec_proto_rawDesc = "" +
 	"rpc_method\x18\v \x01(\tR\trpcMethod\"J\n" +
 	"\vExecJobResp\x12\x14\n" +
 	"\x05extra\x18\x01 \x01(\tR\x05extra\x12%\n" +
-	"\x0fis_run_in_async\x18\x02 \x01(\bR\fisRunInAsync*:\n" +
+	"\x0fis_run_in_async\x18\x02 \x01(\bR\fisRunInAsync*;\n" +
 	"\aErrCode\x12\x0e\n" +
 	"\n" +
-	"ErrCodeNil\x10\x00\x12\x1f\n" +
-	"\x1bErrCodeCallbackFuncNotFound\x10\x012?\n" +
+	"ErrCodeNil\x10\x00\x12 \n" +
+	"\x1bErrCodeCallbackFuncNotFound\x10\xa1\x1f2?\n" +
 	"\aJobExec\x124\n" +
 	"\aExecJob\x12\x13.jobexec.ExecJobReq\x1a\x14.jobexec.ExecJobRespB;Z9github.com/995933447/easymicro/grpc/middleservice/jobexecb\x06proto3"
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/995933447/easymicro/grpc"
@@ -76,6 +77,17 @@ func HandleLikeGRPC[RQ proto.Message, RP proto.Message](serviceName string, meth
 			}
 
 			runtimeutil.Go(func() {
+				defer func() {
+					if r := recover(); r != nil {
+						// 打印错误
+						log.Panicf("[PANIC RECOVER] method=%s panic=%v req:%+v", method, r, req)
+						// 堆栈
+						log.Panicf("[STACK] %s", debug.Stack())
+						// 返回 gRPC 错误
+						err = status.Errorf(codes.Internal, "server panic: %v", r)
+					}
+				}()
+
 				resp, fne := fn(metadata.NewIncomingContext(context.Background(), handleRPCReq.MD), req)
 
 				var handleRPCResp handleLikeGRPCResp
