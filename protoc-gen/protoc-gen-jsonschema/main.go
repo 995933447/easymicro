@@ -12,6 +12,7 @@ import (
 
 	"github.com/995933447/easymicro/pb"
 	easymicroprotogen "github.com/995933447/easymicro/protoc-gen"
+	mgormpb "github.com/995933447/mgorm/pb"
 	"github.com/995933447/runtimeutil"
 	"github.com/995933447/stringhelper-go"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -26,6 +27,7 @@ type JsonSchemaOutputGoFilTemplateSlot struct {
 	RequiredFromJSONSchemaTags bool
 	FieldNameTag               string
 	MessageName                string
+	IsORM                      bool
 }
 
 func PathBase(path string) string {
@@ -159,6 +161,10 @@ func genJsonShemaOutput(plugin *protogen.Plugin, f *protogen.File) error {
 			}
 		}
 
+		if proto.HasExtension(message.Desc.Options(), mgormpb.E_MgormOpts) {
+			slot.IsORM = true
+		}
+
 		var b bytes.Buffer
 		err = tmpl.Execute(&b, slot)
 		if err != nil {
@@ -166,10 +172,10 @@ func genJsonShemaOutput(plugin *protogen.Plugin, f *protogen.File) error {
 			return err
 		}
 
-		messageGoNameToSanke := stringhelper.Snake(message.GoIdent.GoName)
+		messageGoNameToSnake := stringhelper.Snake(message.GoIdent.GoName)
 
 		g := plugin.NewGeneratedFile(
-			"jsonschemaoutput/"+strings.ReplaceAll(messageGoNameToSanke, "_", "")+"/"+messageGoNameToSanke+"_output.go",
+			"jsonschemaoutput/"+strings.ReplaceAll(messageGoNameToSnake, "_", "")+"/"+messageGoNameToSnake+"_output.go",
 			f.GoImportPath+"/configschema",
 		)
 
