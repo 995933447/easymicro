@@ -19,7 +19,7 @@ import (
 )
 
 func RegisterNatsRPCRoutes() error {
-    {{ if gt (LenNatsGRPC .NatsGRPCs) 0 -}}
+    {{ if or (gt (LenNatsGRPC .NatsGRPCs) 0) .EnabledHealth .EnabledJob -}}
  	var err error
  	{{- end }}
     {{ $prefix := PathBase .ServiceClientImportPath -}}
