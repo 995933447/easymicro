@@ -22,6 +22,50 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ErrMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErrMessage) Reset() {
+	*x = ErrMessage{}
+	mi := &file_easymicro_ext_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErrMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErrMessage) ProtoMessage() {}
+
+func (x *ErrMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_easymicro_ext_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErrMessage.ProtoReflect.Descriptor instead.
+func (*ErrMessage) Descriptor() ([]byte, []int) {
+	return file_easymicro_ext_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ErrMessage) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 type JobOpts struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -30,7 +74,7 @@ type JobOpts struct {
 
 func (x *JobOpts) Reset() {
 	*x = JobOpts{}
-	mi := &file_easymicro_ext_proto_msgTypes[0]
+	mi := &file_easymicro_ext_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +86,7 @@ func (x *JobOpts) String() string {
 func (*JobOpts) ProtoMessage() {}
 
 func (x *JobOpts) ProtoReflect() protoreflect.Message {
-	mi := &file_easymicro_ext_proto_msgTypes[0]
+	mi := &file_easymicro_ext_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +99,7 @@ func (x *JobOpts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JobOpts.ProtoReflect.Descriptor instead.
 func (*JobOpts) Descriptor() ([]byte, []int) {
-	return file_easymicro_ext_proto_rawDescGZIP(), []int{0}
+	return file_easymicro_ext_proto_rawDescGZIP(), []int{1}
 }
 
 type JsonSchemaOutputOpts struct {
@@ -70,7 +114,7 @@ type JsonSchemaOutputOpts struct {
 
 func (x *JsonSchemaOutputOpts) Reset() {
 	*x = JsonSchemaOutputOpts{}
-	mi := &file_easymicro_ext_proto_msgTypes[1]
+	mi := &file_easymicro_ext_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -82,7 +126,7 @@ func (x *JsonSchemaOutputOpts) String() string {
 func (*JsonSchemaOutputOpts) ProtoMessage() {}
 
 func (x *JsonSchemaOutputOpts) ProtoReflect() protoreflect.Message {
-	mi := &file_easymicro_ext_proto_msgTypes[1]
+	mi := &file_easymicro_ext_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -95,7 +139,7 @@ func (x *JsonSchemaOutputOpts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JsonSchemaOutputOpts.ProtoReflect.Descriptor instead.
 func (*JsonSchemaOutputOpts) Descriptor() ([]byte, []int) {
-	return file_easymicro_ext_proto_rawDescGZIP(), []int{1}
+	return file_easymicro_ext_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *JsonSchemaOutputOpts) GetEnabledReference() bool {
@@ -152,7 +196,7 @@ type ProtoGenOpts struct {
 
 func (x *ProtoGenOpts) Reset() {
 	*x = ProtoGenOpts{}
-	mi := &file_easymicro_ext_proto_msgTypes[2]
+	mi := &file_easymicro_ext_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -164,7 +208,7 @@ func (x *ProtoGenOpts) String() string {
 func (*ProtoGenOpts) ProtoMessage() {}
 
 func (x *ProtoGenOpts) ProtoReflect() protoreflect.Message {
-	mi := &file_easymicro_ext_proto_msgTypes[2]
+	mi := &file_easymicro_ext_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -177,7 +221,7 @@ func (x *ProtoGenOpts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProtoGenOpts.ProtoReflect.Descriptor instead.
 func (*ProtoGenOpts) Descriptor() ([]byte, []int) {
-	return file_easymicro_ext_proto_rawDescGZIP(), []int{2}
+	return file_easymicro_ext_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ProtoGenOpts) GetServerPackage() string {
@@ -308,6 +352,14 @@ func (x *ProtoGenOpts) GetDisabledFastlogMgormQuery() bool {
 
 var file_easymicro_ext_proto_extTypes = []protoimpl.ExtensionInfo{
 	{
+		ExtendedType:  (*descriptorpb.EnumValueOptions)(nil),
+		ExtensionType: (*ErrMessage)(nil),
+		Field:         66001,
+		Name:          "easymicro_ext.err_message",
+		Tag:           "bytes,66001,opt,name=err_message",
+		Filename:      "easymicro_ext.proto",
+	},
+	{
 		ExtendedType:  (*descriptorpb.FileOptions)(nil),
 		ExtensionType: (*ProtoGenOpts)(nil),
 		Field:         66001,
@@ -341,35 +393,44 @@ var file_easymicro_ext_proto_extTypes = []protoimpl.ExtensionInfo{
 	},
 }
 
+// Extension fields to descriptorpb.EnumValueOptions.
+var (
+	// optional easymicro_ext.ErrMessage err_message = 66001;
+	E_ErrMessage = &file_easymicro_ext_proto_extTypes[0]
+)
+
 // Extension fields to descriptorpb.FileOptions.
 var (
 	// optional easymicro_ext.ProtoGenOpts proto_gen_opts = 66001;
-	E_ProtoGenOpts = &file_easymicro_ext_proto_extTypes[0] // 代码自动生成的扩展
+	E_ProtoGenOpts = &file_easymicro_ext_proto_extTypes[1] // 代码自动生成的扩展
 )
 
 // Extension fields to descriptorpb.MessageOptions.
 var (
 	// optional easymicro_ext.JsonSchemaOutputOpts json_schema_output_opts = 66001;
-	E_JsonSchemaOutputOpts = &file_easymicro_ext_proto_extTypes[1]
+	E_JsonSchemaOutputOpts = &file_easymicro_ext_proto_extTypes[2]
 )
 
 // Extension fields to descriptorpb.MethodOptions.
 var (
 	// optional easymicro_ext.JobOpts job_opts = 66001;
-	E_JobOpts = &file_easymicro_ext_proto_extTypes[2]
+	E_JobOpts = &file_easymicro_ext_proto_extTypes[3]
 )
 
 // Extension fields to descriptorpb.EnumOptions.
 var (
 	// optional bool is_rpc_port = 66001;
-	E_IsRpcPort = &file_easymicro_ext_proto_extTypes[3] // 用于在proto中指定和维护服务的rpc 端口
+	E_IsRpcPort = &file_easymicro_ext_proto_extTypes[4] // 用于在proto中指定和维护服务的rpc 端口
 )
 
 var File_easymicro_ext_proto protoreflect.FileDescriptor
 
 const file_easymicro_ext_proto_rawDesc = "" +
 	"\n" +
-	"\x13easymicro_ext.proto\x12\reasymicro_ext\x1a google/protobuf/descriptor.proto\"\t\n" +
+	"\x13easymicro_ext.proto\x12\reasymicro_ext\x1a google/protobuf/descriptor.proto\"&\n" +
+	"\n" +
+	"ErrMessage\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"\t\n" +
 	"\aJobOpts\"\x82\x02\n" +
 	"\x14JsonSchemaOutputOpts\x12+\n" +
 	"\x11enabled_reference\x18\x01 \x01(\bR\x10enabledReference\x12D\n" +
@@ -396,7 +457,9 @@ const file_easymicro_ext_proto_rawDesc = "" +
 	"\x12auto_go_mod_server\x18\x0f \x01(\bR\x0fautoGoModServer\x123\n" +
 	"\x16mgorm_redis_cache_conn\x18\x10 \x01(\tR\x13mgormRedisCacheConn\x12D\n" +
 	"\x1fdisabled_mgorm_redis_cache_conn\x18\x11 \x01(\bR\x1bdisabledMgormRedisCacheConn\x12?\n" +
-	"\x1cdisabled_fastlog_mgorm_query\x18\x12 \x01(\bR\x19disabledFastlogMgormQuery:a\n" +
+	"\x1cdisabled_fastlog_mgorm_query\x18\x12 \x01(\bR\x19disabledFastlogMgormQuery:_\n" +
+	"\verr_message\x12!.google.protobuf.EnumValueOptions\x18у\x04 \x01(\v2\x19.easymicro_ext.ErrMessageR\n" +
+	"errMessage:a\n" +
 	"\x0eproto_gen_opts\x12\x1c.google.protobuf.FileOptions\x18у\x04 \x01(\v2\x1b.easymicro_ext.ProtoGenOptsR\fprotoGenOpts:}\n" +
 	"\x17json_schema_output_opts\x12\x1f.google.protobuf.MessageOptions\x18у\x04 \x01(\v2#.easymicro_ext.JsonSchemaOutputOptsR\x14jsonSchemaOutputOpts:S\n" +
 	"\bjob_opts\x12\x1e.google.protobuf.MethodOptions\x18у\x04 \x01(\v2\x16.easymicro_ext.JobOptsR\ajobOpts:>\n" +
@@ -414,28 +477,32 @@ func file_easymicro_ext_proto_rawDescGZIP() []byte {
 	return file_easymicro_ext_proto_rawDescData
 }
 
-var file_easymicro_ext_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_easymicro_ext_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_easymicro_ext_proto_goTypes = []any{
-	(*JobOpts)(nil),                     // 0: easymicro_ext.JobOpts
-	(*JsonSchemaOutputOpts)(nil),        // 1: easymicro_ext.JsonSchemaOutputOpts
-	(*ProtoGenOpts)(nil),                // 2: easymicro_ext.ProtoGenOpts
-	(*descriptorpb.FileOptions)(nil),    // 3: google.protobuf.FileOptions
-	(*descriptorpb.MessageOptions)(nil), // 4: google.protobuf.MessageOptions
-	(*descriptorpb.MethodOptions)(nil),  // 5: google.protobuf.MethodOptions
-	(*descriptorpb.EnumOptions)(nil),    // 6: google.protobuf.EnumOptions
+	(*ErrMessage)(nil),                    // 0: easymicro_ext.ErrMessage
+	(*JobOpts)(nil),                       // 1: easymicro_ext.JobOpts
+	(*JsonSchemaOutputOpts)(nil),          // 2: easymicro_ext.JsonSchemaOutputOpts
+	(*ProtoGenOpts)(nil),                  // 3: easymicro_ext.ProtoGenOpts
+	(*descriptorpb.EnumValueOptions)(nil), // 4: google.protobuf.EnumValueOptions
+	(*descriptorpb.FileOptions)(nil),      // 5: google.protobuf.FileOptions
+	(*descriptorpb.MessageOptions)(nil),   // 6: google.protobuf.MessageOptions
+	(*descriptorpb.MethodOptions)(nil),    // 7: google.protobuf.MethodOptions
+	(*descriptorpb.EnumOptions)(nil),      // 8: google.protobuf.EnumOptions
 }
 var file_easymicro_ext_proto_depIdxs = []int32{
-	3, // 0: easymicro_ext.proto_gen_opts:extendee -> google.protobuf.FileOptions
-	4, // 1: easymicro_ext.json_schema_output_opts:extendee -> google.protobuf.MessageOptions
-	5, // 2: easymicro_ext.job_opts:extendee -> google.protobuf.MethodOptions
-	6, // 3: easymicro_ext.is_rpc_port:extendee -> google.protobuf.EnumOptions
-	2, // 4: easymicro_ext.proto_gen_opts:type_name -> easymicro_ext.ProtoGenOpts
-	1, // 5: easymicro_ext.json_schema_output_opts:type_name -> easymicro_ext.JsonSchemaOutputOpts
-	0, // 6: easymicro_ext.job_opts:type_name -> easymicro_ext.JobOpts
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	4, // [4:7] is the sub-list for extension type_name
-	0, // [0:4] is the sub-list for extension extendee
+	4, // 0: easymicro_ext.err_message:extendee -> google.protobuf.EnumValueOptions
+	5, // 1: easymicro_ext.proto_gen_opts:extendee -> google.protobuf.FileOptions
+	6, // 2: easymicro_ext.json_schema_output_opts:extendee -> google.protobuf.MessageOptions
+	7, // 3: easymicro_ext.job_opts:extendee -> google.protobuf.MethodOptions
+	8, // 4: easymicro_ext.is_rpc_port:extendee -> google.protobuf.EnumOptions
+	0, // 5: easymicro_ext.err_message:type_name -> easymicro_ext.ErrMessage
+	3, // 6: easymicro_ext.proto_gen_opts:type_name -> easymicro_ext.ProtoGenOpts
+	2, // 7: easymicro_ext.json_schema_output_opts:type_name -> easymicro_ext.JsonSchemaOutputOpts
+	1, // 8: easymicro_ext.job_opts:type_name -> easymicro_ext.JobOpts
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	5, // [5:9] is the sub-list for extension type_name
+	0, // [0:5] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
 }
 
@@ -450,8 +517,8 @@ func file_easymicro_ext_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_easymicro_ext_proto_rawDesc), len(file_easymicro_ext_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
-			NumExtensions: 4,
+			NumMessages:   4,
+			NumExtensions: 5,
 			NumServices:   0,
 		},
 		GoTypes:           file_easymicro_ext_proto_goTypes,

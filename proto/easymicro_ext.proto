@@ -5,6 +5,10 @@ option go_package = "github.com/995933447/easymicro/pb";
 
 import "google/protobuf/descriptor.proto";
 
+extend google.protobuf.EnumValueOptions {
+  ErrMessage err_message = 66001;
+}
+
 extend google.protobuf.FileOptions {
   ProtoGenOpts proto_gen_opts = 66001; // 代码自动生成的扩展
 }
@@ -15,6 +19,10 @@ extend google.protobuf.MessageOptions {
 
 extend google.protobuf.MethodOptions {
   JobOpts job_opts = 66001;
+}
+
+message ErrMessage {
+  string message = 1;
 }
 
 message JobOpts {}

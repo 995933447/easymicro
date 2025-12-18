@@ -1,8 +1,10 @@
 package grpc
 
 import (
+	"github.com/995933447/easymicro/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -10,7 +12,13 @@ const ErrCodeUnknown = -1
 
 func newErrFromEnumWithMsg(err protoreflect.Enum, errMsg string) error {
 	if errMsg == "" {
-		errMsg = string(err.Descriptor().Values().ByNumber(err.Number()).Name())
+		options := err.Descriptor().Values().ByNumber(err.Number()).Options()
+		if proto.HasExtension(options, pb.E_ErrMessage) {
+			errMsg = proto.GetExtension(options, pb.E_ErrMessage).(*pb.ErrMessage).Message
+		}
+		if errMsg == "" {
+			errMsg = string(err.Descriptor().Values().ByNumber(err.Number()).Name())
+		}
 	}
 	return status.Errorf(codes.Code(err.Number()), errMsg)
 }
