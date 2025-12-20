@@ -152,8 +152,12 @@ func genClientSkeleton(plugin *protogen.Plugin, f *protogen.File) error {
 	opts := f.Desc.Options().(*descriptorpb.FileOptions)
 	if proto.HasExtension(opts, pb.E_ProtoGenOpts) {
 		ext := proto.GetExtension(opts, pb.E_ProtoGenOpts).(*pb.ProtoGenOpts)
-		schema = ext.GrpcSchema
-		discoveryName = ext.DiscoveryName
+		if ext.GrpcSchema != "" {
+			schema = ext.GrpcSchema
+		}
+		if ext.DiscoveryName != "" {
+			discoveryName = ext.DiscoveryName
+		}
 	}
 
 	var bb bytes.Buffer
