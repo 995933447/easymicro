@@ -64,6 +64,9 @@ func InitAndWatchGRPCClientMetadataFunc(discoveryName string) func(resolve func(
 
 		eg := runtimeutil.NewErrGrp()
 		for _, node := range resolveNodes {
+			if !node.Available() {
+				continue
+			}
 			leastNode := node
 			eg.Go(func() error {
 				if err = resolve(leastNode.Host, leastNode.Port); err != nil {
