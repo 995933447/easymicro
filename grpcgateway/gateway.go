@@ -3,6 +3,8 @@ package grpcgateway
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/995933447/discovery"
 	"github.com/995933447/discovery/manager"
@@ -20,6 +22,8 @@ func InitGRPCResolverFunc(ctx context.Context, resolveSchema, discoveryName stri
 
 func InitAndWatchGRPCClientMetadataFunc(discoveryName string) func(resolve func(svcHost string, svcPort int) error) error {
 	return func(resolve func(svcHost string, svcPort int) error) error {
+		var mu sync.Mutex
+
 		dis, err := manager.GetDiscovery(discoveryName)
 		if err != nil {
 			return err
@@ -32,9 +36,11 @@ func InitAndWatchGRPCClientMetadataFunc(discoveryName string) func(resolve func(
 				if !leastNode.Available() {
 					return
 				}
+				mu.Lock()
 				if err = resolve(leastNode.Host, leastNode.Port); err != nil {
 					fastlog.Errorf("err:%v", err)
 				}
+				mu.Unlock()
 			case discovery.EvtDeleted:
 				var rmKeys []string
 				grpcgateway.WalkRpcMetadata(func(key string, meta *grpcgateway.RpcMetadata) bool {
@@ -50,35 +56,58 @@ func InitAndWatchGRPCClientMetadataFunc(discoveryName string) func(resolve func(
 			}
 		})
 
-		srvs, err := dis.LoadAll(context.TODO())
-		if err != nil {
+		resolver := func() error {
+			srvs, err := dis.LoadAll(context.TODO())
+			if err != nil {
+				fastlog.Errorf("err:%v", err)
+				return err
+			}
+
+			resolveNodes := make(map[string]*discovery.Node)
+			for _, srv := range srvs {
+				leastNode := srv.Nodes[len(srv.Nodes)-1]
+				resolveNodes[fmt.Sprintf("%s:%d", leastNode.Host, leastNode.Port)] = leastNode
+			}
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			eg := runtimeutil.NewErrGrp()
+			for _, node := range resolveNodes {
+				if !node.Available() {
+					continue
+				}
+				leastNode := node
+				eg.Go(func() error {
+					if err = resolve(leastNode.Host, leastNode.Port); err != nil {
+						fastlog.Errorf("err:%v", err)
+						return err
+					}
+
+					return nil
+				})
+			}
+			if err = eg.Wait(); err != nil {
+				fastlog.Errorf("err:%v", err)
+			}
+
+			return nil
+		}
+
+		if err := resolver(); err != nil {
 			fastlog.Errorf("err:%v", err)
 			return err
 		}
 
-		resolveNodes := make(map[string]*discovery.Node)
-		for _, srv := range srvs {
-			leastNode := srv.Nodes[len(srv.Nodes)-1]
-			resolveNodes[fmt.Sprintf("%s:%d", leastNode.Host, leastNode.Port)] = leastNode
-		}
-
-		eg := runtimeutil.NewErrGrp()
-		for _, node := range resolveNodes {
-			if !node.Available() {
-				continue
-			}
-			leastNode := node
-			eg.Go(func() error {
-				if err = resolve(leastNode.Host, leastNode.Port); err != nil {
+		go func() {
+			// 定时主动刷新服务节点,兜底逻辑
+			for {
+				time.Sleep(time.Minute * 10)
+				if err := resolver(); err != nil {
 					fastlog.Errorf("err:%v", err)
-					return err
 				}
-				return nil
-			})
-		}
-		if err = eg.Wait(); err != nil {
-			fastlog.Errorf("err:%v", err)
-		}
+			}
+		}()
 
 		return nil
 	}
