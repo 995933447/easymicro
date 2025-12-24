@@ -79,13 +79,11 @@ func RPCBreakerStreamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc 
 
 func TraceRPCUnaryInterceptor(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 	trace := runtimeutil.GetOrCreateTrace()
-	defer runtimeutil.AutoRemoveTrace()
 	return invoker(metadata.AppendToOutgoingContext(ctx, easymicrogrpc.CtxKeyTrace, trace), method, req, reply, cc, opts...)
 }
 
 func TraceRPCStreamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 	trace := runtimeutil.GetOrCreateTrace()
-	defer runtimeutil.AutoRemoveTrace()
 	return streamer(metadata.AppendToOutgoingContext(ctx, easymicrogrpc.CtxKeyTrace, trace), desc, cc, method, opts...)
 }
 

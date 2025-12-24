@@ -32,15 +32,17 @@ func InitAndWatchGRPCClientMetadataFunc(discoveryName string) func(resolve func(
 		dis.OnSrvUpdated(func(ctx context.Context, evt discovery.Evt, svc *discovery.Service) {
 			switch evt {
 			case discovery.EvtUpdated:
-				leastNode := svc.Nodes[len(svc.Nodes)-1]
-				if !leastNode.Available() {
-					return
+				for _, node := range svc.Nodes {
+					if !node.Available() {
+						continue
+					}
+
+					mu.Lock()
+					if err = resolve(node.Host, node.Port); err != nil {
+						fastlog.Errorf("err:%v", err)
+					}
+					mu.Unlock()
 				}
-				mu.Lock()
-				if err = resolve(leastNode.Host, leastNode.Port); err != nil {
-					fastlog.Errorf("err:%v", err)
-				}
-				mu.Unlock()
 			case discovery.EvtDeleted:
 				var rmKeys []string
 				grpcgateway.WalkRpcMetadata(func(key string, meta *grpcgateway.RpcMetadata) bool {
@@ -65,8 +67,13 @@ func InitAndWatchGRPCClientMetadataFunc(discoveryName string) func(resolve func(
 
 			resolveNodes := make(map[string]*discovery.Node)
 			for _, srv := range srvs {
-				leastNode := srv.Nodes[len(srv.Nodes)-1]
-				resolveNodes[fmt.Sprintf("%s:%d", leastNode.Host, leastNode.Port)] = leastNode
+				for _, node := range srv.Nodes {
+					if !node.Available() {
+						continue
+					}
+
+					resolveNodes[fmt.Sprintf("%s:%d", node.Host, node.Port)] = node
+				}
 			}
 
 			mu.Lock()
@@ -74,9 +81,6 @@ func InitAndWatchGRPCClientMetadataFunc(discoveryName string) func(resolve func(
 
 			eg := runtimeutil.NewErrGrp()
 			for _, node := range resolveNodes {
-				if !node.Available() {
-					continue
-				}
 				leastNode := node
 				eg.Go(func() error {
 					if err = resolve(leastNode.Host, leastNode.Port); err != nil {
