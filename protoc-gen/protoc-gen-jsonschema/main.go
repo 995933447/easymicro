@@ -176,7 +176,7 @@ func genJsonShemaOutput(plugin *protogen.Plugin, f *protogen.File) error {
 
 		g := plugin.NewGeneratedFile(
 			"jsonschemaoutput/"+strings.ReplaceAll(messageGoNameToSnake, "_", "")+"/"+messageGoNameToSnake+"_output.go",
-			f.GoImportPath+"/configschema",
+			f.GoImportPath+"/jsonschemaoutput",
 		)
 
 		g.P(b.String())

@@ -22,19 +22,6 @@ func main() {
 	fmt.Print(s)
 }
 
-func OutputFormatJsonString() (string, error) {
-	b, err := OutputFormatJson()
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-func OutputFormatJson() ([]byte, error) {
-	schema := Output()
-	return jsoniter.Marshal(schema)
-}
-
 func Output() *jsonschema.Schema {
 	r := &jsonschema.Reflector{}
 	r.DoNotReference = {{ .DoNotReference }}
