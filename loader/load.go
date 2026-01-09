@@ -27,6 +27,11 @@ func GetSearchConfDirPaths() []string {
 	}
 	dirs = append(dirs, ".."+string(os.PathSeparator)+PrivateConfigBasicDirName)
 
+	if nodeName != "" {
+		dirs = append(dirs, ".."+string(os.PathSeparator)+".."+string(os.PathSeparator)+PrivateConfigBasicDirName+string(os.PathSeparator)+nodeName)
+	}
+	dirs = append(dirs, ".."+string(os.PathSeparator)+".."+string(os.PathSeparator)+PrivateConfigBasicDirName)
+
 	osVarPath := os.Getenv(OsEnvVarKeyConfigDirPath)
 	if osVarPath != "" {
 		if nodeName != "" {
